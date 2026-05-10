@@ -19,12 +19,14 @@ knit: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE, 
+  echo = TRUE,
   message = FALSE,
   warning = FALSE,
-  out.width  = "100%",
-  fig.align = "center"
-  )
+  fig.path = "figures/",
+  fig.width = 10,
+  fig.height = 6,
+  dpi = 300
+)
 ```
 
 ## Introduction
@@ -188,7 +190,7 @@ forecast_long <- forecast_24 %>%
   )
 
 ggplot(forecast_long, aes(x = Time, y = Value, group = 1)) +
-  geom_line() +
+  geom_line(linewidth = 0.4) +
   facet_wrap(~Variable, scales = "free_y", nrow = 3) +
   labs(
     title = "Weather Forecast for the Next 24 Hours in Guatemala City",
@@ -196,7 +198,7 @@ ggplot(forecast_long, aes(x = Time, y = Value, group = 1)) +
     y = ""
   ) + 
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5, size = 6 ),
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5, size = 9 ),
         plot.title = element_text(hjust = 0.5))
 ```
 
@@ -262,7 +264,7 @@ knitr::kable(
 ### Plot
 
 ```{r}
-# data prep
+# prep data
 plot_df <- weather_averages[weather_averages$Month != "All", ] 
 plot_df$Month <- factor(plot_df$Month,
   levels = c("January","February","March","April",
@@ -271,37 +273,66 @@ plot_df$Month <- factor(plot_df$Month,
 scale_factor <- max(plot_df$Precipitation) / max(plot_df$High)
 
 ggplot(plot_df, aes(x = Month)) +
-  # precipitation
-  geom_area(aes(y = Precipitation / scale_factor, group = 1),
-            fill = "steelblue",
-            alpha = 0.3) + 
-  # temperature range
-  geom_ribbon(aes(ymin = Low, ymax = High, group = 1),
-              fill = "tomato",
-              alpha = 0.7) +
+  geom_area(
+    aes(y = Precipitation / scale_factor, fill = "Precipitation (mm)", group = 1),
+    alpha = 0.3
+  ) +
 
-    geom_line(aes(y = Mean, color = "Mean"), size = 1, group = 1) +
+  geom_errorbar(
+    aes(ymin = Low, ymax = High, color = "Temperature range (min/max)"),
+    width = 0.3,
+    linewidth = 0.8
+  ) +
+
+  geom_line(
+    aes(y = Mean, color = "Mean temperature (°C)", group = 1),
+    linewidth = 1
+  ) +
+
+  geom_point(
+    aes(y = Mean, color = "Mean temperature (°C)"),
+    size = 2.5
+  ) +
 
   scale_y_continuous(
     name = "Temperature (°C)",
     limits = c(0, max(plot_df$High) * 1.2),
     sec.axis = sec_axis(~ . * scale_factor, name = "Precipitation (mm)")
   ) +
-  scale_color_manual(values = c("Mean" = "firebrick")) +
-  scale_x_discrete(labels = month.abb) + 
-  labs(title = "Annual Weather Averages in Guatemala City",
-       subtitle = "Based on low, mean and high Temperatures collected during 1992–2021",
-       caption = "Right side precipitation & Left side temperature",
-       x = "") +
+
+  scale_fill_manual(
+    name = "",
+    values = c("Precipitation (mm)" = "steelblue")
+  ) +
+
+  scale_color_manual(
+    name = "",
+    values = c(
+      "Mean temperature (°C)" = "firebrick",
+      "Temperature range (min/max)" = "tomato"
+    )
+  ) +
+
+  scale_x_discrete(labels = month.abb) +
+
+  labs(
+    title = "Annual Weather Averages in Guatemala City",
+    subtitle = "Monthly precipitation with temperature range and mean temperature",
+    caption = "Right axis: precipitation | Left axis: temperature",
+    x = ""
+  ) +
+
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5),
-        plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5),
-        plot.caption = element_text(hjust = 0.5),
-        axis.title.y = element_text(color = "firebrick"),
-        axis.title.y.right = element_text(color = "steelblue"),
-        legend.position = "none"
-        )
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 0.5),
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5),
+    plot.caption = element_text(hjust = 0.5),
+    axis.title.y = element_text(color = "firebrick"),
+    axis.title.y.right = element_text(color = "steelblue"),
+    legend.position = "bottom"
+  )
+
 ```
 
 ### Insights
