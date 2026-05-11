@@ -6,6 +6,14 @@ Georgios Papadopoulos \|
 **Reproducible weather data acquisition workflow in R using web
 scraping, data transformation, and visualization techniques.**
 
+## Contents
+
+- [Introduction](#introduction)
+- [Methods](#methods)
+- [1. 48hour weather forecast](#1-48hour-weather-forecast)
+- [2. Hourly weather forecast](#2-hourly-weather-forecast)
+- [3. Annual weather averages](#3-annual-weather-averages)
+
 ## Introduction
 
 This project demonstrates a reproducible weather data acquisition
@@ -26,19 +34,18 @@ library(httr)
 
 The original workflow uses `httr` and `rvest` for web scraping,
 `tidyverse` for data cleaning and transformation, `stringr` for text
-extraction, `ggplot2` for visualization and `kableExtra` for formatted
-tables.
+extraction and `ggplot2` for visualization.
 
 However, the website later introduced restrictions on automated requests
 which resulted in HTTP 403 errors during rendering. To preserve
 reproducibility, the source webpages were therefore stored locally as
 HTML files and parsed with the same scraping workflow.
 
-## 1. 48-hour weather forecast
+## 1. 48hour weather forecast
 
 The weather page is requested programmatically, parsed as HTML, and
 converted into structured tables. The available tables are then
-inspected to identify the relevant 48-hour forecast data for further
+inspected to identify the relevant 48hour forecast data for further
 cleaning and analysis.
 
 ``` r
@@ -53,9 +60,9 @@ cat("The website contains", length(tables), "tables")
     ## The website contains 4 tables
 
 After inspecting the extracted HTML tables, the third table was
-identified as the relevant 48-hour forecast table. This table is
-selected as the source for the following cleaning, restructuring and
-analysis steps.
+identified as the relevant 48hour forecast table. This table is selected
+as the source for the following cleaning, restructuring and analysis
+steps.
 
 ### Data cleaning
 
@@ -126,12 +133,15 @@ Forecast for the next 48 hours in Guatemala City
 
 ### Insights
 
-The 48-hour forecast for Guatemala City shows stable weather conditions
-with no expected rainfall. Temperatures follow a daily cycle, higher in
-the afternoon around 26 degrees Celsius and lower at night around 15
-degrees Celsius, while humidity increases as temperature decreases. Wind
-speeds remain light and fairly constant and conditions are mostly cloudy
-throughout.
+The 48hour forecast shows a consistent daily temperature pattern with
+afternoon temperatures reaching around 27 degrees Celsius and cooler
+conditions during the evening and night. Humidity moves in the opposite
+direction, dropping during the warmer afternoon periods and increasing
+overnight. Rainfall risk is present throughout the period but remains
+light with the highest expected amount on Monday afternoon. Wind
+conditions are calm and stable which suggests that the main short term
+variation comes from humidity and passing showers rather than strong
+wind or major temperature changes.
 
 ## 2. Hourly weather forecast
 
@@ -233,7 +243,7 @@ forecast_long <- forecast_24 %>%
   ) %>%
   mutate(
     Variable = recode(Variable,
-      "Temp" = "Temperature (°C)",
+      "Temp" = "Temperature (C)",
       "Humidity" = "Humidity (%)",
       "Wind" = "Wind (km/h)"
     )
@@ -256,24 +266,19 @@ ggplot(forecast_long, aes(x = Time, y = Value, group = 1)) +
 
 ### Insights
 
-Temperature follows a typical diurnal cycle, peaking in the early
-afternoon at around 27 degrees Celcius and gradually decreasing
-throughout the evening and night to a minimum of approximately 14
-degrees Celcius in the early morning hours. After sunrise, temperatures
-begin to rise again steadily.
+The hourly forecast shows a clear daily cycle. Temperature rises from 25
+degrees Celsius in the morning to a peak of 28 degrees Celsius in the
+early afternoon, then gradually falls overnight to 17 degrees Celsius
+before increasing again after sunrise.
 
-Humidity exhibits an inverse relationship with temperature. During the
-warmest part of the day, humidity levels are lowest (around 33–38%),
-while as temperatures decrease in the evening and night, humidity rises
-significantly, reaching peak levels of over 80% during the early morning
-hours. This indicates a strong negative correlation between temperature
-and humidity.
+Humidity follows the opposite pattern. It is lowest during the warmest
+afternoon hours, around 42–43%, and rises steadily during the evening
+and night, reaching 83% in the early morning. This highlights the
+inverse relationship between temperature and humidity.
 
-Wind speed remains relatively stable throughout the day, fluctuating
-within a narrow range of approximately 10 to 14 km/h. Rather than
-showing a strong upward or downward trend, wind patterns vary in small
-cycles or phases over the course of the day, with slight increases
-during the afternoon and late evening.
+Wind speed remains low throughout the day, mostly between 4 and 6 km/h.
+The only noticeable deviation occurs in the late afternoon, when wind
+briefly drops to 1–2 km/h before returning to around 6 km/h overnight.
 
 ## 3. Annual weather averages
 
@@ -375,17 +380,17 @@ ggplot(plot_df, aes(x = Month)) +
   ) +
 
   geom_line(
-    aes(y = Mean, color = "Mean temperature (°C)", group = 1),
+    aes(y = Mean, color = "Mean temperature (C)", group = 1),
     linewidth = 1
   ) +
 
   geom_point(
-    aes(y = Mean, color = "Mean temperature (°C)"),
+    aes(y = Mean, color = "Mean temperature (C)"),
     size = 2.5
   ) +
 
   scale_y_continuous(
-    name = "Temperature (°C)",
+    name = "Temperature (C)",
     limits = c(0, max(plot_df$High) * 1.2),
     sec.axis = sec_axis(~ . * scale_factor, name = "Precipitation (mm)")
   ) +
@@ -398,7 +403,7 @@ ggplot(plot_df, aes(x = Month)) +
   scale_color_manual(
     name = "",
     values = c(
-      "Mean temperature (°C)" = "firebrick",
+      "Mean temperature (C)" = "firebrick",
       "Temperature range (min/max)" = "tomato"
     )
   ) +
